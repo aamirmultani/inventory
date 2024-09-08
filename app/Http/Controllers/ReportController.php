@@ -5,12 +5,20 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class ReportController extends Controller
 {
     // Fetch category-wise product reports
     public function categoryWiseReports()
     {
+        $user = Auth::user();
+        $roleName = $user->roles()->pluck('name')->first(); // Fetch the first role name
+
+        if($roleName === "Customer") {
+            return response()->json(['message' => 'You are not authorized to view report'], 401);
+        }
         // Fetch all categories with their respective products
         $categories = Category::with('products:id,name,price,category_id,quantity')->get(['id', 'name']);
 
@@ -26,11 +34,21 @@ class ReportController extends Controller
     public function fetchPaymentReports(Request $request)
 {
     // Validate input query parameters
-    $request->validate([
+    $validator = Validator::make($request->all(), [
         'payment_method' => 'string|in:cod,online',  // Assuming valid methods are COD, CreditCard, and PayPal
         'year' => 'integer|min:2000|max:' . date('Y'),  // Valid year range
         'payment_status' => 'string|in:pending,paid'  // Assuming valid statuses are pending and completed
     ]);
+    if ($validator->fails()) {
+        return response()->json($validator->errors(), 422);
+    }
+
+    $user = Auth::user();
+    $roleName = $user->roles()->pluck('name')->first(); // Fetch the first role name
+
+    if($roleName === "Customer") {
+            return response()->json(['message' => 'You are not authorized to view report'], 401);
+    }
 
     // Get filters from the request
     $paymentMethod = $request->payment_method;

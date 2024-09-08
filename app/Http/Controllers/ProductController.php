@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
@@ -37,7 +38,13 @@ class ProductController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
+        
+        $user = Auth::user();
+        $roleName = $user->roles()->pluck('name')->first(); // Fetch the first role name
 
+        if($roleName === "Customer") {
+            return response()->json(['message' => 'You are not authorized to create Product'], 401);
+        }
        $product =  Product::create($request->all());
 
         if($product) {
@@ -77,6 +84,12 @@ class ProductController extends Controller
             return response()->json($validator->errors(), 422);
         }
 
+        $user = Auth::user();
+        $roleName = $user->roles()->pluck('name')->first(); // Fetch the first role name
+
+        if($roleName === "Customer") {
+            return response()->json(['message' => 'You are not authorized to update Product'], 401);
+        }
         $product->update($request->all());
 
         if($product) {
@@ -89,6 +102,12 @@ class ProductController extends Controller
 
     public function destroy(Product $product)
     {
+        $user = Auth::user();
+        $roleName = $user->roles()->pluck('name')->first(); // Fetch the first role name
+
+        if($roleName === "Customer") {
+            return response()->json(['message' => 'You are not authorized to delete Product'], 401);
+        }
         $product->delete();
 
         if($product) {
