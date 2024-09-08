@@ -31,8 +31,6 @@ use function Ramsey\Uuid\v1;
 Route::group(['prefix' => 'v1'], function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
-    Route::resource('roles', 'RoleController');
-    Route::resource('permissions', 'PermissionController');
 });
 
 Route::group(['prefix' => 'v1', 'middleware' => 'auth:api'], function () {
@@ -41,6 +39,8 @@ Route::group(['prefix' => 'v1', 'middleware' => 'auth:api'], function () {
     Route::resource('categories', 'CategoryController'); 
     Route::resource('user-address', 'UserAddressController');
     Route::resource('order', 'OrderController');
+    Route::resource('roles', 'RoleController');
+    Route::resource('permissions', 'PermissionController');
     Route::get('category-reports', 'ReportController@categoryWiseReports');
     Route::get('reports-payments', 'ReportController@fetchPaymentReports');
     Route::post('users/{userId}/assign-role', 'UserController@assignRole');

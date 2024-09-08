@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Permission;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class PermissionController extends Controller
@@ -22,6 +23,12 @@ class PermissionController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
+        $user = Auth::user();
+        $roleName = $user->roles()->pluck('name')->first(); // Fetch the first role name
+
+        if($roleName === "Customer" || $roleName === "Seller") {
+            return response()->json(['message' => 'You are not authorized to perform action'], 401);
+        }
 
         $permission = Permission::create($request->only('name'));
         return response()->json($permission, 201);
@@ -29,6 +36,12 @@ class PermissionController extends Controller
 
     public function show($id)
     {
+        $user = Auth::user();
+        $roleName = $user->roles()->pluck('name')->first(); // Fetch the first role name
+
+        if($roleName === "Customer" || $roleName === "Seller") {
+            return response()->json(['message' => 'You are not authorized to perform action'], 401);
+        }
         $permission = Permission::find($id);
         if (!$permission) {
             return response()->json(['message' => 'Permission not found'], 404);
@@ -44,6 +57,12 @@ class PermissionController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
+        $user = Auth::user();
+        $roleName = $user->roles()->pluck('name')->first(); // Fetch the first role name
+
+        if($roleName === "Customer" || $roleName === "Seller") {
+            return response()->json(['message' => 'You are not authorized to perform action'], 401);
+        }
 
         $permission = Permission::find($id);
         if (!$permission) {
@@ -55,6 +74,13 @@ class PermissionController extends Controller
 
     public function destroy($id)
     {
+        $user = Auth::user();
+        $roleName = $user->roles()->pluck('name')->first(); // Fetch the first role name
+
+        if($roleName === "Customer" || $roleName === "Seller") {
+            return response()->json(['message' => 'You are not authorized to perform action'], 401);
+        }
+        
         $permission = Permission::find($id);
         if (!$permission) {
             return response()->json(['message' => 'Permission not found'], 404);

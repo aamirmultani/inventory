@@ -10,6 +10,7 @@ use App\Models\Role;
 use App\Models\RoleUser;
 use App\Models\UserAddress;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 
@@ -36,6 +37,12 @@ class OrderController extends Controller
         
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
+        }
+        $user = Auth::user();
+        $roleName = $user->roles()->pluck('name')->first(); // Fetch the first role name
+
+        if($roleName === "Seller") {
+            return response()->json(['message' => 'You are not authorized to create order'], 401);
         }
 
         $order = Order::create([
@@ -85,6 +92,12 @@ class OrderController extends Controller
         if($validator->fails()){
             return response()->json($validator->errors(), 422);
         }
+        $user = Auth::user();
+        $roleName = $user->roles()->pluck('name')->first(); // Fetch the first role name
+
+        if($roleName === "Seller") {
+            return response()->json(['message' => 'You are not authorized to update order'], 401);
+        }
 
         $order->update($request->all());
         $prodcutId = $order->product_id;
@@ -99,7 +112,12 @@ class OrderController extends Controller
         if ($order->user_id !== auth()->id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
+        $user = Auth::user();
+        $roleName = $user->roles()->pluck('name')->first(); // Fetch the first role name
 
+        if($roleName === "Seller") {
+            return response()->json(['message' => 'You are not authorized to delete order'], 401);
+        }
         $order->delete();
         return response()->json(['message' => 'Order deleted successfully']);
     }

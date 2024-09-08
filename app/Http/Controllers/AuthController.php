@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\RoleUser;
 use App\Models\UserAddress;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -47,7 +48,6 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-       // dd('hi');
         $validator = Validator::make($request->all(), [
             'email' => 'required|string|email|max:255',
             'password' => 'required|string|min:6',
@@ -59,9 +59,11 @@ class AuthController extends Controller
 
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = Auth::user();
+            $userId = $user->id;
+            $role = RoleUser::where('user_id', $userId)->pluck('role_id')->first();
             $token = $user->createToken('LaravelAuthApp')->accessToken;
 
-            return response()->json(['token' => $token,'user' => $user], 200);  
+            return response()->json(['token' => $token,'user' => $user ,'role_id' =>$role], 200);  
         } else {
             return response()->json(['error' => 'Unauthorized'], 401);
         }

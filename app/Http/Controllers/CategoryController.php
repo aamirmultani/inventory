@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Role;
+use App\Models\RoleUser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 
 class CategoryController extends Controller
@@ -34,7 +37,12 @@ class CategoryController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
+        $user = Auth::user();
+        $roleName = $user->roles()->pluck('name')->first(); // Fetch the first role name
 
+        if($roleName === "Customer") {
+            return response()->json(['message' => 'You are not authorized to create category'], 401);
+        }
         $category = Category::create($request->all());
         if($category) {
             return response()->json(['message' => 'Category created successfully'], 201);
@@ -46,6 +54,12 @@ class CategoryController extends Controller
 
     public function show(Category $category)
     {
+        $user = Auth::user();
+        $roleName = $user->roles()->pluck('name')->first(); // Fetch the first role name
+
+        if($roleName === "Customer") {
+            return response()->json(['message' => 'You are not authorized to view category'], 401);
+        }
         $category = Category::find($category);
         if($category) {
             return response()->json(['category' => $category], 201);
@@ -69,7 +83,13 @@ class CategoryController extends Controller
         if ($validator->fails()) {
             return response()->json($validator->errors(), 422);
         }
-        
+        $user = Auth::user();
+        $roleName = $user->roles()->pluck('name')->first(); // Fetch the first role name
+
+        if($roleName === "Customer") {
+            return response()->json(['message' => 'You are not authorized to update category'], 401);
+        }
+
         $category->update($request->all());
 
         if($category) {
@@ -82,6 +102,13 @@ class CategoryController extends Controller
 
     public function destroy(Category $category)
     {
+        $user = Auth::user();
+        $roleName = $user->roles()->pluck('name')->first(); // Fetch the first role name
+
+        if($roleName === "Customer") {
+            return response()->json(['message' => 'You are not authorized to delete category'], 401);
+        }
+
         $category->delete();
         if($category) {
             return response()->json(['message' => 'Category deleted successfully'], 201);
